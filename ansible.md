@@ -21,7 +21,7 @@ ansible <host-pattern> -m <module> -a "<arguments>"
 ansible all -m ping
 ```
 
-## How to install ansible
+## How to install ansible on Ubuntu
 ```bash
 sudo apt update && sudo apt upgrade
 sudo apt install ansible
@@ -55,7 +55,7 @@ sudo nano inventory
 ```bash
 172.31.34.168
 ```
-### If you are using wsl, do it instead
+### If you are using wsl, do it this instead
 ```bash
 [wsls]
 wsl2 ansible_host=172.31.34.168 ansible_port=2223 ansible_user=server2
@@ -154,35 +154,32 @@ wsl_second_instance ansible_host=172.31.34.168 ansible_port=2226 ansible_user=se
 wsl_third_instance ansible_host=172.31.34.168 ansible_port=2228 ansible_user=kali
 wsl_fourth_instance ansible_host=172.31.34.168 ansible_port=2225 ansible_user=almalinux
 ```
-This tells Ansible that, wsl_first_instance is located at IP 172.31.34.168, accessible on port 2223, and you should log in using the server2 user.
-NB: ansible_host, ansible_port, and ansible_user are pre-built variables used by Ansible to define how to connect to remote systems. These variables help Ansible manage remote hosts in your inventory and specify connection details.
+- This tells Ansible that, wsl_first_instance is located at IP 172.31.34.168, accessible on port 2223, and you should log in using the server2 user.
+- NB: ansible_host, ansible_port, and ansible_user are pre-built variables used by Ansible to define how to connect to remote systems. These variables help Ansible manage remote hosts in your inventory and specify connection details.
 
 ### Explanation:
-- [wsls]: Group name "wsls" — can group multiple hosts here.
-This is a group name in the Ansible inventory.
+**[wsls]:** Group name "wsls" — can group multiple hosts here.
+- This is a group name in the Ansible inventory.
 Everything listed underneath [wsls] will be part of this group. In this case, wsl_first_instance is the host under this group.
-Ansible allows you to group multiple hosts under a label (e.g., [servers], [databases], [webservers], etc.) to run tasks collectively on all members of that group.
+- Ansible allows you to group multiple hosts under a label (e.g., [servers], [databases], [webservers], etc.) to run tasks collectively on all members of that group.
 
-- wsl_first_instance (Host alias — identifier for this specific host)
-This is a host name or alias for the machine you're managing.
-ansible_host=172.31.34.168:
-With the Ansible inventory configuration, you don't need to change the actual machine's name or hostname on each individual system you are managing. Instead, you use an alias or a custom name in the inventory file to represent the machine.
+**wsl_first_instance** (Host alias — identifier for this specific host)
+- This is a host name or alias for the machine you're managing. 
 
+**ansible_host=172.31.34.168:** With the Ansible inventory configuration, you don't need to change the actual machine's name or hostname on each individual system you are managing. Instead, you use an alias or a custom name in the inventory file to represent the machine.
 - This defines the IP address (or DNS name) of the host you want to manage.
-In this case, 172.31.34.168 is the IP address of wsl_first_instance, and Ansible will use this to connect to the machine during task execution.
-This is useful if the hostname (wsl_first_instance) does not match the system’s actual address or if you want to use an IP address explicitly.
-ansible_port=2223:
+- In this case, 172.31.34.168 is the IP address of wsl_first_instance, and Ansible will use this to connect to the machine during task execution.
+- This is useful if the hostname (wsl_first_instance) does not match the system’s actual address or if you want to use an IP address explicitly.
 
-- This specifies the SSH port that Ansible will use to connect to the host.
+**ansible_port=2223:** This specifies the SSH port that Ansible will use to connect to the host.
 By default, SSH uses port 22, but in this case, you're using port 2223 for SSH.
 If the system you're managing is set up to listen on a different SSH port (in this case, 2223), you specify this so Ansible knows which port to connect to.
-ansible_user=server2:
 
-- This specifies the SSH user to use when connecting to the host.
-In this case, server2 is the username that will be used to SSH into wsl_first_instance.
-It's important that the user has appropriate privileges and access to perform the necessary tasks on the machine. If you’re using key-based authentication, the server2 user should have the corresponding public key added to their ~/.ssh/authorized_keys.
+**ansible_user=server2:** This specifies the SSH user to use when connecting to the host.
+- In this case, server2 is the username that will be used to SSH into wsl_first_instance.
+- It's important that the user has appropriate privileges and access to perform the necessary tasks on the machine. If you’re using key-based authentication, the server2 user should have the corresponding public key added to their ~/.ssh/authorized_keys.
 
-## How to set up ansible config file to shortened our playbook command
+## How to set up ansible config file to shortened our Ad-hoc command
 ```bash
 sudo nano ansible.cfg
 ```
@@ -194,8 +191,15 @@ NB: Ansible config file is run when you run ansible command
 inventory = inventory
 private_key_file = ~/.ssh/ansible
 ```
-NB: The ansible.cfg zhould be in your ansible project working directory 
+NB: The ansible.cfg should be in your ansible project working directory 
 NB: You might have ansible.cfg at /etc/ansible, We will ignored it because the one we have created manually will override that one.
+
+### After Creating the ansible.cfg file when shortened our ansible run command
+```bash
+ansible all -m ping
+```
+Now we are not mannualy specifying the private key and inventory file to use but since we have the config file it will check from there. 
+NB: Previous command: **ansible all --key-file ~/.ssh/ansible -i inventory -m ping**
 
 
 #### How to specify the private key in the inventory file
@@ -213,13 +217,6 @@ wsl_fourth_instance ansible_host=172.31.34.168 ansible_port=2225 ansible_user=al
 ```bash
 ansible wsl_first_instance -m ping
 ```
-
-### After Creating the ansible.cfg file when shortened our ansible run command
-```bash
-ansible all -m ping
-```
-Now we are not mannualy specifying the private key and inventory file to use but since we have the config file it will check from there. 
-NB: Previous command: **ansible all --key-file ~/.ssh/ansible -i inventory -m ping**
 
 ## How to list all hosts
 ```bash
@@ -282,8 +279,8 @@ wsl_first_instance | UNREACHABLE! => {
 }
 ```
 
-## The issue might come from the paraphrase caching
-We can create a key without paraphrase or cache it individually with the command bellow
+## The issue might come from the paraphrase caching from the ssh key pair
+We can create a ssh key pair without paraphrase or cache it individually with the command bellow
 ```bash
 ansible all -m ping -f 1
 ```
@@ -322,45 +319,43 @@ wsl_fourth_instance | SUCCESS => {
 ```
 
 ### The reason ansible all -m ping -f 1 works without issues is due to the following:
-1. Sequential Execution
-The -f 1 option limits Ansible to execute tasks one host at a time, rather than concurrently. This sequential execution avoids potential conflicts or race conditions when multiple SSH connections are initiated simultaneously, especially when the SSH key passphrase needs to be entered multiple times.
-2. Passphrase Prompting
-When tasks are executed one by one, Ansible prompts for the SSH key passphrase for each host individually. This ensures the passphrase is correctly used for each connection without relying on caching or multiplexing.
-3. Avoidance of SSH Key Reuse Issues
-Running tasks in parallel (without -f 1) could cause Ansible to reuse the SSH key improperly or not handle passphrase prompts efficiently, leading to permission errors. Sequential execution eliminates this problem as each connection gets a fresh passphrase prompt.
-4. Ansible's SSH Handling
-Ansible might struggle with managing concurrent SSH sessions involving the same SSH key with a passphrase, leading to some connections failing if the passphrase isn't correctly cached or reused. By reducing concurrency, this issue is mitigated.
+**1. Sequential Execution**: The **-f 1** option limits Ansible to execute tasks one host at a time, rather than concurrently. This sequential execution avoids potential conflicts or race conditions when multiple SSH connections are initiated simultaneously, especially when the SSH key passphrase needs to be entered multiple times.
+
+**2. Passphrase Prompting:** When tasks are executed one by one, Ansible prompts for the SSH key passphrase for each host individually. This ensures the passphrase is correctly used for each connection without relying on caching or multiplexing.
+
+**3. Avoidance of SSH Key Reuse Issues:** Running tasks in parallel (without -f 1) could cause Ansible to reuse the SSH key improperly or not handle passphrase prompts efficiently, leading to permission errors. Sequential execution eliminates this problem as each connection gets a fresh passphrase prompt.
+
+**4. Ansible's SSH Handling**: Ansible might struggle with managing concurrent SSH sessions involving the same SSH key with a passphrase, leading to some connections failing if the passphrase isn't correctly cached or reused. By reducing concurrency, this issue is mitigated.
 Solution Going Forward:
 
-### To avoid repeatedly entering the passphrase, 
+## How avoid repeatedly entering the passphrase and  ansible all -m ping without -f 1
 You can use ssh-agent to cache the passphrase or configure SSH multiplexing, as mentioned earlier. This will allow you to use ansible all -m ping without -f 1 and avoid passphrase prompts for each host.
 
-## how to configure ssh-agent
+## How to configure ssh-agent
 To configure ssh-agent for caching your SSH key passphrase so you don't have to enter it repeatedly, follow these steps:
-1. Start ssh-agent
-First, you need to start the ssh-agent process, which will manage your SSH keys in the background.
+
+**1. Start ssh-agent:** First, you need to start the ssh-agent process, which will manage your SSH keys in the background.
 ```bash
 eval "$(ssh-agent -s)"
 ```
 This command will start the agent and set up the necessary environment variables in your current shell session.
-Success Response
+#### Success Response
 ```bash
 Agent pid 2058
 ```
-2. Add Your SSH Key to the Agent
-Now, add your SSH private key to the ssh-agent. You will need to enter the passphrase for the key the first time you add it.
+**2. Add Your SSH Key to the Agent:** Now, add your SSH private key to the ssh-agent. You will need to enter the passphrase for the key the first time you add it.
 ```bash
 ssh-add ~/.ssh/ansible
 ```
 If your SSH key is in a different location or has a different name, adjust the path accordingly. After entering the passphrase once, it will be cached by the agent.
-Success Response
+
+#### Success Response
 ```bash
 Enter passphrase for /home/server1/.ssh/ansible:
 Identity added: /home/server1/.ssh/ansible (server1@DESKTOP-J7M3OKM)
 ```
 
-3. Verify the Key is Added
-You can verify that your key has been added to the agent by running:
+**3. Verify the Key is Added:** You can verify that your key has been added to the agent by running:
 ```bash
 ssh-add -l
 ```
@@ -368,7 +363,8 @@ This should list your SSH key, showing its fingerprint.
 ```bash
 256 SHA256:74Vfv/Pbweqh8P1y17M/w1oNlYOKw5JKtZkJEc5Ff10 server1@DESKTOP-J7M3OKM (ED25519)
 ```
-4. Configure the Agent to Start Automatically (Optional)
+
+## Configure the Agent to Start Automatically
 If you'd like ssh-agent to start automatically whenever you open a new terminal session, you can add the following to your shell's initialization file (e.g., ~/.bashrc, ~/.zshrc depending on your shell):
 
 ```bash
@@ -383,8 +379,9 @@ source ~/.bashrc
 ```
 This will ensure that ssh-agent is started automatically for new terminal sessions.
 
-5. Use ssh-agent with Ansible
+### Use ssh-agent with Ansible
 Now that your SSH key is loaded into ssh-agent, Ansible will use this cached key without requiring you to enter the passphrase for each connection.
+
 You can test this by running an Ansible command, and it should not prompt you for the passphrase:
 ```bash
 ansible all -m ping
@@ -422,13 +419,11 @@ wsl_second_instance | SUCCESS => {
 }
 ```
 
-6. Stop the Agent (Optional)
+### Stop the Agent (Optional)
 If you no longer need the agent running, you can stop it using:
 ```bash
 ssh-agent -k
 ```
-
-
 
 # Running Elavated Ad-Hoc Commands
 Anything on the linux sever that makes changes to the sever itself is going to require to be a root user or have sudo previllages
@@ -436,7 +431,7 @@ Anything on the linux sever that makes changes to the sever itself is going to r
 ```bash
 ansible all -m apt -a update_cache=true
 ```
-This command will failed because root user or sudo previllages to execute, same as the command below without sudo
+This command will failed because its needs root user or sudo previllages to execute, same as the command below without sudo
 
 ### Error messages from the above command 
 ```bash
@@ -456,52 +451,57 @@ apt update
 Reading package lists... Done
 E: Could not open lock file /var/lib/apt/lists/lock - open (13: Permission denied)
 
+NB: The above comparisms are used to know the importance --become --ask-become-pass
+
 ## How to add sudo previllages or command
 ```bash
 ansible all -m apt -a update_cache=true --become --ask-become-pass
 ```
-The command ansible all -m apt -a update_cache=true --become --ask-become-pass is an Ansible ad-hoc command that updates the package cache on all targeted machines using the apt module. Here's a breakdown of each part:
 
-Command Breakdown
-ansible all:
+The command **ansible all -m apt -a update_cache=true --become --ask-become-pass** is an Ansible ad-hoc command that updates the package cache on all targeted machines using the apt module. Here's a breakdown of each part:
 
-ansible: This is the Ansible command-line tool.
-all: This refers to all hosts defined in the inventory. You can replace all with a specific group or hostname to target specific machines.
--m apt:
+#### Command Breakdown
+**ansible all**
+- **ansible:** This is the Ansible command-line tool.
 
--m: This flag specifies the module to be used.
-apt: The module being used, which is specific to Debian-based systems (like Ubuntu) for managing apt packages.
--a update_cache=true:
+- **all:** This refers to all hosts defined in the inventory. You can replace all with a specific group or hostname to target specific machines.
+  
+**-m apt**
+- **-m:** This flag specifies the module to be used.
+- **apt:** The module being used, which is specific to Debian-based systems (like Ubuntu) for managing apt packages.
 
--a: This flag allows you to pass arguments to the module.
-update_cache=true: This argument tells the apt module to update the package cache (apt update equivalent)., similar to running sudo apt update on a Debian-based system.
---become:
+**-a update_cache=true**
+- **-a:** This flag allows you to pass arguments to the module.
+  
+- **update_cache=true:** This argument tells the apt module to update the package cache (apt update equivalent)., similar to running sudo apt update on a Debian-based system.
 
+**--become**
 This flag elevates the command to run with superuser (root) privileges, which is often necessary for package management.
---ask-become-pass:
 
+**--ask-become-pass:**
 Ansible will prompt you for the sudo password.
 ansible all -m apt -a update_cache=true --become --ask-become-pass
-BECOME password:
 
-The prompt for the sudo password is for the client (target) servers, not the server running Ansible (control node). Here's how it works:
+### The prompt for the sudo password  (BECOME password:) is for the client (target) servers, not the server running Ansible (control node). 
 
-Control Node (Ansible Server): This is where you run the Ansible command.
-Target Nodes (Clients): These are the remote servers listed in your inventory that Ansible connects to and manages.
-Prompt Behavior:
-When you use --ask-become-pass, Ansible will prompt you to enter the sudo password for the user on the target nodes.
+#### Here's how it works:
+- **Control Node (Ansible Server):** This is where you run the Ansible command.
+- **Target Nodes (Clients):** These are the remote servers listed in your inventory that Ansible connects to and manages.
+
+##### Prompt Behavior:
+When you use **--ask-become-pass**, Ansible will prompt you to enter the sudo password for the user on the target nodes.
+
 The password you enter is used to gain elevated privileges (via sudo) on the target nodes to perform tasks that require root access, such as updating the package cache.
 
 ## If the target servers have different sudo passwords, you can handle this in several ways:
 
-1. Run the Playbook Separately for Each Group with Different Passwords:
 You can run the Ansible command or playbook separately for each group of servers that share the same sudo password, using --ask-become-pass each time.
 
 ```bash
 ansible group1 -m apt -a update_cache=true --become --ask-become-pass
 ansible group2 -m apt -a update_cache=true --become --ask-become-pass
 ```
-2. Use --limit to Target Specific Hosts:
+1. Use --limit to Target Specific Hosts:
 Limit the playbook or command to specific hosts with a shared password.
 ```bash
 ansible all -m apt -a update_cache=true --become --ask-become-pass --limit host1,host2
@@ -510,14 +510,14 @@ ansible all -m apt -a update_cache=true --become --ask-become-pass --limit host1
 
 
 
-
-ansible_host: IP or hostname of the target machine.
-ansible_port: Port for SSH.
-ansible_user: SSH user.
-ansible_ssh_private_key_file: Path to the private key.
-ansible_ssh_common_args: Additional SSH arguments.
-ansible_ssh_extra_args: More SSH arguments.
-ansible_connection: Type of connection (e.g., ssh, local, winrm).
-ansible_ssh_user: SSH user for authentication.
-ansible_become: Whether to escalate privileges.
-ansible_become_user: The user to become after privilege escalation.
+## Some useful ansible built in variables
+- **ansible_host:** IP or hostname of the target machine.
+- **ansible_port:** Port for SSH.
+- **ansible_user:** SSH user.
+- **ansible_ssh_private_key_file:** Path to the private key.
+- **ansible_ssh_common_args:** Additional SSH arguments.
+- **ansible_ssh_extra_args:** More SSH arguments.
+- **ansible_connection:** Type of connection (e.g., ssh, local, winrm).
+- **ansible_ssh_user:** SSH user for authentication.
+- **ansible_become:** Whether to escalate privileges.
+- **ansible_become_user:** The user to become after privilege escalation.
