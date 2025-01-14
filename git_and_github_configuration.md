@@ -184,9 +184,16 @@ error: failed to push some refs to 'github.com:bernardofosu/ansible_projects.git
 ```
 ## Solution to the above error
 ```bash
-server1@DESKTOP-J7M3OKM:~/ansible_projects$ git push -u origin main
+server1@DESKTOP-J7M3OKM:~/ansible_projects$ git push -u origin 
+
 Enter passphrase for key '/home/server1/.ssh/id_ed25519':
+
 Enumerating objects: 4, done.
 Counting objects: 100% (4/4), done.
 Delta compression using up to 8 threads
+```
+
+### If you're unsure about the branch name, you can check it using:
+```bash
+git branch
 ```

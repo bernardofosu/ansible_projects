@@ -1,0 +1,38 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+  - name: Update Cache on all the Servers
+    apt:
+        update_cache: yes
+
+  - name: Install apache on all servers
+    apt:
+        name: apache2
+        state: latest
+
+  - name: Installing php for apache
+    apt:
+        name: libapache2-mod-php
+        state: latest
+
+
+# ---
+
+# - hosts: all
+#   become: true
+#   tasks:
+#   - name: Update Cache on all the Servers
+#     apt:
+#         update_cache: yes
+
+#   - name: Install apache on all servers
+#     apt:
+#         name: apache2
+#         state: absent
+
+#   - name: Installing php for apache
+#     apt:
+#         name: libapache2-mod-php
+#         state: absent

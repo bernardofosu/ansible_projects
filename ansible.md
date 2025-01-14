@@ -243,7 +243,7 @@ sudo reboot
 ```
 
 ## How to remove sudo password
-[link to that guide]()
+[link to that guide](remove_sudo_promt.md)
 
 ## How to solve the error where only one host show and the rest give error
 ```bash
@@ -507,9 +507,6 @@ Limit the playbook or command to specific hosts with a shared password.
 ansible all -m apt -a update_cache=true --become --ask-become-pass --limit host1,host2
 ```
 
-
-
-
 ## Some useful ansible built in variables
 - **ansible_host:** IP or hostname of the target machine.
 - **ansible_port:** Port for SSH.
@@ -521,3 +518,168 @@ ansible all -m apt -a update_cache=true --become --ask-become-pass --limit host1
 - **ansible_ssh_user:** SSH user for authentication.
 - **ansible_become:** Whether to escalate privileges.
 - **ansible_become_user:** The user to become after privilege escalation.
+
+
+# Writting Ansible Playbook using YAML
+```bash
+---
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Install apache on all servers
+      apt:
+        name: apache2
+```
+
+## Command to run the ansible Playbook
+```bash
+ansible-playbook --ask-become-pass name_of_the_playbook.yaml
+```
+
+### Using Random package name to get our playbook failed
+```bash
+---
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Install apache on all servers
+      apt:
+        name: nana
+```
+
+### How to Update the Repository on Linux
+```bash
+---
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Update Cache on all the Servers
+      apt:
+        update_cache: yes
+```
+
+### How to install php for apache
+```bash
+---
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Installing php for apache
+      apt:
+        name: libapache2-mod-php
+```
+
+## How to remove packages by changing the state to absent
+```bash
+---
+
+- hosts: all
+  become: true
+  tasks:
+  - name: Update Cache on all the Servers
+    apt:
+        update_cache: yes
+
+  - name: Install apache on all servers
+    apt:
+        name: apache2
+        state: absent
+```
+
+## How to use the when condition to do segregation
+The when condition is very important when you want to install packges on multiple Distribution
+
+### How to check your Distribution
+```bash
+cat /etc/os-release
+lsb_release -a
+```
+#### When you try to use the apt module to install packages on Centos or Red Hat, you will get error say no apt
+```bash
+which apt
+which apt-get
+```
+#### Example 
+```bash
+- hosts: all
+  become: true
+  tasks:
+  - name: Update Cache on all the Servers
+    apt:
+        update_cache: yes
+    when: ansible_distribution == "Ubuntu"
+```
+
+### You can use list for multiple Distribution
+```bash
+- hosts: all
+  become: true
+  tasks:
+  - name: Update Cache on all the Servers
+    apt:
+        update_cache: yes
+    when: ansible_distribution in ["Ubuntu", "Debian"]
+```
+
+#### Using the gather facts ad-hoc command, we will the some in built variables (keys) and values to run the when command
+```bash
+ansible all -m gatther_facts --limit hostnmane/ip_address/alias_name
+```
+#### We can use the grep command to know specific things like our OS Name or We can grep any key from gather_facts output
+```bash
+ansible all -m gatther_facts --limit hostnmane/ip_address/alias_name | grep ansible_distribution
+```
+
+### How to use and & or operators
+```bash
+- hosts: all
+  become: true
+  tasks:
+  - name: Update Cache on all the Servers
+    apt:
+        update_cache: yes
+    when: ansible_distribution == "Ubuntu" and ansible_distribution_version == 8.2
+```
+
+### Playbook Configuration for CentOS or Red Hat Distribution
+- Playbook side for Red Hat and CentOS, 
+- Package Manager = dnf
+- Apache2 = httpd
+- libapache2-mod-php = php
+```bash
+- hosts: all
+  become: true
+  tasks:
+  - name: Update Cache on all the Servers
+    apt:
+        update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: Install apache on all servers
+    apt:
+        name: httpd
+        state: latest
+    when: ansible_distribution == "CentOS"
+
+  - name: Installing php for apache
+    apt:
+        name: php
+        state: latest
+    when: ansible_distribution == "CentOS"
+```
+
+One problem is, on CentOS, the Apache2(httpd) will not start automatically after the installation and we have to also set the port for apache2 (port = 80).
+
+We can manually do it
+```bash
+sudo systemctl start httpd # start apache2
+
+sudo firewall-cmd --add-port=80/tcp # allow port 80
+```
+
+#### We want to automate everything with ansible 
+
