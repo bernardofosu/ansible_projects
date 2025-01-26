@@ -99,6 +99,17 @@ PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
 ```
 ## After making any changes, restart the SSH service:
+### How to Check the Service Name
+Use systemctl to list the available SSH services and confirm the correct name on the linux distribution
+```bash
+sudo systemctl list-units --type=service | grep ssh
+```
+#### Success Message
+```bash
+ssh.service                                    loaded active running OpenBSD Secure Shell server # for debian and ubuntu
+
+sshd.service                                          loaded active running OpenSSH server daemon # for CentOS
+```
 ```bash
 sudo systemctl restart sshd
 sudo systemctl restart ssh
@@ -279,7 +290,7 @@ wsl_first_instance | UNREACHABLE! => {
 }
 ```
 
-## The issue might come from the paraphrase caching from the ssh key pair
+## The issue might come from the paraphrase caching from the ssh key pair or cache individually
 We can create a ssh key pair without paraphrase or cache it individually with the command bellow
 ```bash
 ansible all -m ping -f 1
@@ -674,6 +685,10 @@ ansible all -m gatther_facts --limit hostnmane/ip_address/alias_name | grep ansi
 
 One problem is, on CentOS, the Apache2(httpd) will not start automatically after the installation and we have to also set the port for apache2 (port = 80).
 
+On Amazon Linux 2, dnf is not the default package manager. The default package manager for Amazon Linux 2 is yum (Yellowdog Updater, Modified), which is based on rpm packages, and dnf is typically used in Fedora-based distributions (and later versions of RHEL/CentOS).
+
+However, if you've tried installing Apache using dnf, there could be potential issues related to dependencies, package management conflicts, or configuration files that don't align well with Amazon Linux 2's environment. This could lead to issues with missing unit files, incorrect configurations, or incomplete installations, which might have caused the problems you've encountered.
+
 We can manually do it
 ```bash
 sudo systemctl start httpd # start apache2
@@ -682,4 +697,38 @@ sudo firewall-cmd --add-port=80/tcp # allow port 80
 ```
 
 #### We want to automate everything with ansible 
+
+i have to say i really love ansible and i want learn more 
+
+### How to check Amazon linux features
+```bash
+ansible all -m gather_facts --limit 34.228.66.28 | grep ansible_distribution
+```
+```bash
+https://docs.ansible.com/ansible-
+core/2.17/reference_appendices/interpreter_discovery.html for more information.
+        "ansible_distribution": "Amazon",
+        "ansible_distribution_file_parsed": true,
+        "ansible_distribution_file_path": "/etc/os-release",
+        "ansible_distribution_file_variety": "Amazon",
+        "ansible_distribution_major_version": "2023",
+        "ansible_distribution_minor_version": "NA",
+        "ansible_distribution_release": "NA",
+        "ansible_distribution_version": "2023",
+```
+
+## How to target specific nodes in the inventory
+```bash
+[all]
+54.198.104.165 ansible_user=ubuntu ansible_ssh_private_key_file=~/Desktop/Splunk_Key/splunk_key.pem
+
+54.81.15.114 ansible_user=ec2-user ansible_ssh_private_key_file=~/Desktop/Splunk_Key/splunk_key.pem
+
+[webservers]
+54.198.104.165 ansible_user=ubuntu ansible_ssh_private_key_file=~/Desktop/Splunk_Key/splunk_key.pem
+
+
+[dbservers]
+54.81.15.114 ansible_user=ec2-user ansible_ssh_private_key_file=~/Desktop/Splunk_Key/splunk_key.pem
+```
 

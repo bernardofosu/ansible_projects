@@ -138,7 +138,7 @@ sudo systemctl restart sshd
 ```
 NB: Avoiding Errors: Using the incorrect service name may result in errors like "Unit ssh.service not found" or "Unit sshd.service not found." Therefore, it's essential to use the service name specific to your system.
 
-### How to solve these errors
+### How to solve these  on the kali linux
 ```bash
 systemctl status ssh
 System has not been booted with systemd as init system (PID 1). Can't operate.
@@ -237,6 +237,30 @@ TriggeredBy: ● ssh.socket
 echo "your_username ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/your_username
 ```
 
-How to install Docker
-[Go to this website to check system reuirements](https://docs.docker.com/desktop/setup/install/windows-install/)
+To generate all the requested SSH host keys and configuration files, here's how you can create them manually. We'll generate the host keys (ssh_host_rsa_key, ssh_host_ecdsa_key, and ssh_host_ed25519_key), their public counterparts (e.g., ssh_host_rsa_key.pub), and the associated SSH configuration files (ssh_config, sshd_config, etc.).
 
+## Generate SSH Host Keys
+RSA Key (for SSH host):
+
+bash
+Copy
+sudo ssh-keygen -t rsa -b 4096 -f /etc/ssh/ssh_host_rsa_key
+ECDSA Key (for SSH host):
+
+bash
+Copy
+sudo ssh-keygen -t ecdsa -b 521 -f /etc/ssh/ssh_host_ecdsa_key
+ED25519 Key (for SSH host):
+
+bash
+Copy
+sudo ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key
+These commands will generate the private keys (ssh_host_rsa_key, ssh_host_ecdsa_key, ssh_host_ed25519_key) and their corresponding public keys (e.g., ssh_host_rsa_key.pub, ssh_host_ecdsa_key.pub, ssh_host_ed25519_key.pub) in the /etc/ssh/ directory.
+
+Step 2: Ensure Permissions are Correct
+After generating the keys, ensure that the files have the correct permissions:
+
+bash
+Copy
+sudo chown root:root /etc/ssh/ssh_host_*
+sudo chmod 600 /etc/ssh/ssh_host_*
